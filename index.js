@@ -1,5 +1,4 @@
-require('dotenv').config();
-const express = require('express');
+ const express = require('express');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 
@@ -60,9 +59,10 @@ app.post('/users', (req, res) => {
   });
   
 
-  app.listen(port, () => {
+  const server = app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);
   });
+  module.exports = { app, server, connection };7
 
   // Obter usuario por ID
   app.get('/users/:id', (req, res) => {
@@ -77,5 +77,31 @@ app.post('/users', (req, res) => {
     });
   });
 
-  //atualizar usuário
+  //atualizar usuário 
+  app.put('/users/:id', (req, res) => {
+    const { id } = req.params;
+    const { name, email } = req.body;
+    const UPDATE_USER_QUERY = `UPDATE users SET name = ?, email = ? WHERE id = ?`;
+    connection.query(UPDATE_USER_QUERY, [name, email, id], (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ error: 'Usuário não encontrado'
+      });
+    }   
+      res.json({ message: 'Usuário atualizado com sucesso' });
+    });
+  });
+  
+  //deletar usuário
+  app.delete('/users/:id', (req, res) => {
+    const { id } = req.params;
+    const DELETE_USER_QUERY = `DELETE FROM users WHERE id = ?`;
+    connection.query(DELETE_USER_QUERY, [id], (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ error: 'Usuário não encontrado' });
+      }
+      res.json({ message: 'Usuário deletado com sucesso' });
+    });
+  });
 
